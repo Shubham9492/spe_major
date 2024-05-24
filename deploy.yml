@@ -1,0 +1,17 @@
+- name: Deploy Docker Compose
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Pull Backend Image
+      docker_image:
+        name: shubham004/spe-backend:latest
+        source: pull
+
+    - name: Pull Frontend Image
+      docker_image:
+        name: shubham004/spe-frontend:latest
+        source: pull
+
+    - name: Start Docker Compose stack
+      command: docker-compose up -d
