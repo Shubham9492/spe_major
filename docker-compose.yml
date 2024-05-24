@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  server:
+    image: shubham004/spe-backend:latest
+    ports:
+      - "4000:4000"
+    environment:
+      RAZORPAY_KEY: "rzp_test_u9UPBw6OgS0jZs"
+      RAZORPAY_SECRET: "YD7IFG6BFdz1oW0nnVYgvX9B"
+      CLOUD_NAME: "dc0hap6ki"
+      API_KEY :  "195226433571528"
+      API_SECRET :  "qTpc9h1zj5FzkqCOz_Qxt60VVqQ"
+      MONGODB_URL : "mongodb+srv://    sutharshubham84931:cHHZZ3Z2B786QqdP@educonnect11.fi9ap4k.mongodb.net/?retryWrites=true&w=majority&appName=educonnect11"
+      PORT : "4000"
+      
+    depends_on:
+      - mongo
+
+  client:
+    image: shubham004/spe-frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+
