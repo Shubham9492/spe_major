@@ -1,14 +1,18 @@
 const Section = require("../models/Section")
 const Course = require("../models/Course")
 const SubSection = require("../models/Subsection")
+const logger = require('../logger.js');
+
 // CREATE a new section
 exports.createSection = async (req, res) => {
   try {
     // Extract the required properties from the request body
+    logger.info("Creating new section");
     const { sectionName, courseId } = req.body
 
     // Validate the input
     if (!sectionName || !courseId) {
+      logger.info("Missing required properties");
       return res.status(400).json({
         success: false,
         message: "Missing required properties",
@@ -17,6 +21,7 @@ exports.createSection = async (req, res) => {
 
     // Create a new section with the given name
     const newSection = await Section.create({ sectionName })
+    logger.info("New section created", { newSection });
 
     // Add the new section to the course's content array
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -35,6 +40,8 @@ exports.createSection = async (req, res) => {
         },
       })
       .exec()
+
+      logger.info("Course updated with new section", { updatedCourse });
 
     // Return the updated course object in the response
     res.status(200).json({

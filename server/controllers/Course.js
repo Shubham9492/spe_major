@@ -1,8 +1,10 @@
 const Course = require("../models/Course")
 const Category = require("../models/Category")
 const Section = require("../models/Section")
+const logger = require('../logger.js');
 const SubSection = require("../models/Subsection")
 const User = require("../models/User")
+
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 const CourseProgress = require("../models/CourseProgress")
 const { convertSecondsToDuration } = require("../utils/secToDuration")
@@ -122,6 +124,7 @@ exports.createCourse = async (req, res) => {
       message: "Course Created Successfully",
     })
   } catch (error) {
+    logger.info("Failed to create course")
     // Handle any errors that occur during the creation of the course
     console.error(error)
     res.status(500).json({
@@ -139,6 +142,7 @@ exports.editCourse = async (req, res) => {
     const course = await Course.findById(courseId)
 
     if (!course) {
+      logger.info("Course not found")
       return res.status(404).json({ error: "Course not found" })
     }
 
@@ -373,6 +377,7 @@ exports.getFullCourseDetails = async (req, res) => {
     console.log("courseProgressCount : ", courseProgressCount)
 
     if (!courseDetails) {
+      logger.info("Could not find course id")
       return res.status(400).json({
         success: false,
         message: `Could not find course with id: ${courseId}`,
@@ -447,6 +452,7 @@ exports.deleteCourse = async (req, res) => {
     // Find the course
     const course = await Course.findById(courseId)
     if (!course) {
+      logger.info("Course not found")
       return res.status(404).json({ message: "Course not found" })
     }
 
@@ -476,7 +482,7 @@ exports.deleteCourse = async (req, res) => {
 
     // Delete the course
     await Course.findByIdAndDelete(courseId)
-
+    
     return res.status(200).json({
       success: true,
       message: "Course deleted successfully",

@@ -1,6 +1,6 @@
 const Profile = require("../models/Profile")
 const CourseProgress = require("../models/CourseProgress")
-
+const logger = require('../logger.js');
 const Course = require("../models/Course")
 const User = require("../models/User")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
@@ -18,16 +18,19 @@ exports.updateProfile = async (req, res) => {
       gender = "",
     } = req.body
     const id = req.user.id
+    logger.info(`Updating profile for user ID: ${id}`);
 
     // Find the profile by id
     const userDetails = await User.findById(id)
     const profile = await Profile.findById(userDetails.additionalDetails)
+    logger.info(`User details and profile fetched for user ID: ${id}`);
 
     const user = await User.findByIdAndUpdate(id, {
       firstName,
       lastName,
     })
     await user.save()
+    logger.info(`User details updated for user ID: ${id}`);
 
     // Update the profile fields
     profile.dateOfBirth = dateOfBirth
@@ -37,11 +40,14 @@ exports.updateProfile = async (req, res) => {
 
     // Save the updated profile
     await profile.save()
+    logger.info(`Profile updated for user ID: ${id}`);
 
     // Find the updated user details
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
       .exec()
+
+      logger.info(`Updated user details fetched for user ID: ${id}`);
 
     return res.json({
       success: true,
@@ -49,6 +55,8 @@ exports.updateProfile = async (req, res) => {
       updatedUserDetails,
     })
   } catch (error) {
+    logger.error(`Error updating profile for user ID: ${id}`, { error });
+
     console.log(error)
     return res.status(500).json({
       success: false,
@@ -118,6 +126,8 @@ exports.updateDisplayPicture = async (req, res) => {
   try {
     const displayPicture = req.files.displayPicture
     const userId = req.user.id
+    logger.info(`Uploading display picture for user ID: ${userId}`);
+
     const image = await uploadImageToCloudinary(
       displayPicture,
       process.env.FOLDER_NAME,
@@ -125,17 +135,23 @@ exports.updateDisplayPicture = async (req, res) => {
       1000
     )
     console.log(image)
+    logger.info(`Image uploaded to Cloudinary for user ID: ${userId}`, { imageUrl: image.secure_url });
+
     const updatedProfile = await User.findByIdAndUpdate(
       { _id: userId },
       { image: image.secure_url },
       { new: true }
     )
+    logger.info(`User profile updated with new image URL for user ID: ${userId}`);
+
     res.send({
       success: true,
       message: `Image Updated successfully`,
       data: updatedProfile,
     })
   } catch (error) {
+    logger.error(`Error updating display picture for user ID: ${userId}`, { error });
+
     return res.status(500).json({
       success: false,
       message: error.message,

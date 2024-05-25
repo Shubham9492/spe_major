@@ -3,6 +3,7 @@ const Section = require("../models/Section")
 const SubSection = require("../models/Subsection")
 const CourseProgress = require("../models/CourseProgress")
 const Course = require("../models/Course")
+const logger = require('../logger.js');
 
 exports.updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body
@@ -12,6 +13,7 @@ exports.updateCourseProgress = async (req, res) => {
     // Check if the subsection is valid
     const subsection = await SubSection.findById(subsectionId)
     if (!subsection) {
+      logger.info("Invalid subsection")
       return res.status(404).json({ error: "Invalid subsection" })
     }
 
@@ -30,6 +32,7 @@ exports.updateCourseProgress = async (req, res) => {
     } else {
       // If course progress exists, check if the subsection is already completed
       if (courseProgress.completedVideos.includes(subsectionId)) {
+        logger.info("Subsection already completed")
         return res.status(400).json({ error: "Subsection already completed" })
       }
 
@@ -43,6 +46,7 @@ exports.updateCourseProgress = async (req, res) => {
     return res.status(200).json({ message: "Course progress updated" })
   } catch (error) {
     console.error(error)
+    logger.info("Internal server error")
     return res.status(500).json({ error: "Internal server error" })
   }
 }

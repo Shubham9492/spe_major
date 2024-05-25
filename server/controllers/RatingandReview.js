@@ -1,10 +1,12 @@
 const RatingAndReview = require("../models/RatingandReview")
 const Course = require("../models/Course")
 const mongoose = require("mongoose")
+const logger = require('../logger.js');
 
 // Create a new rating and review
 exports.createRating = async (req, res) => {
   try {
+    
     const userId = req.user.id
     const { rating, review, courseId } = req.body
 
@@ -108,6 +110,7 @@ exports.getAverageRating = async (req, res) => {
 // Get all rating and reviews
 exports.getAllRatingReview = async (req, res) => {
   try {
+    logger.info("Fetching all rating and reviews");
     const allReviews = await RatingAndReview.find({})
       .sort({ rating: "desc" })
       .populate({
@@ -120,11 +123,16 @@ exports.getAllRatingReview = async (req, res) => {
       })
       .exec()
 
+      logger.info("All rating and reviews fetched successfully");
+
+
     res.status(200).json({
       success: true,
       data: allReviews,
     })
   } catch (error) {
+    logger.error("Failed to retrieve the rating and review for the course", { error });
+
     console.error(error)
     return res.status(500).json({
       success: false,

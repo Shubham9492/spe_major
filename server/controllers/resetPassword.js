@@ -1,18 +1,23 @@
 const User = require("../models/User")
 const mailSender = require("../utils/mailSender")
 const bcrypt = require("bcrypt")
+const logger = require('../logger.js');
 const crypto = require("crypto")
 exports.resetPasswordToken = async (req, res) => {
   try {
     const email = req.body.email
+    logger.info(`Request received to reset password for email: ${email}`);
     const user = await User.findOne({ email: email })
     if (!user) {
+      logger.info(`Email ${email} is not registered with us`);
+
       return res.json({
         success: false,
         message: `This Email: ${email} is not Registered With Us Enter a Valid Email `,
       })
     }
     const token = crypto.randomBytes(20).toString("hex")
+    logger.info(`Generated reset password token for email: ${email}`);
 
     const updatedDetails = await User.findOneAndUpdate(
       { email: email },
@@ -26,12 +31,16 @@ exports.resetPasswordToken = async (req, res) => {
 
     // const url = `http://localhost:3000/update-password/${token}`
     const url = `https://studynotion-edtech-project.vercel.app/update-password/${token}`
+    logger.info(`Generated reset password URL: ${url}`);
 
     await mailSender(
       email,
       "Password Reset",
       `Your Link for email verification is ${url}. Please click this url to reset your password.`
     )
+
+    logger.info(`Reset password email sent successfully to: ${email}`);
+
 
     res.json({
       success: true,

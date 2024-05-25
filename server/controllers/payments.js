@@ -2,6 +2,7 @@ const { instance } = require("../config/razorpay")
 const Course = require("../models/Course")
 const crypto = require("crypto")
 const User = require("../models/User")
+const logger = require('../logger.js');
 const mailSender = require("../utils/mailSender")
 const mongoose = require("mongoose")
 const {
@@ -15,6 +16,7 @@ exports.capturePayment = async (req, res) => {
   const { courses } = req.body
   const userId = req.user.id
   if (courses.length === 0) {
+    logger.info("Pleasre Provide Course ID")
     return res.json({ success: false, message: "Please Provide Course ID" })
   }
 
@@ -87,7 +89,7 @@ exports.verifyPayment = async (req, res) => {
     !courses ||
     !userId
   ) {
-    return res.status(200).json({ success: false, message: "Payment Failed" })
+    return res.status(200).json({ success: false, message: "Payment Failed"  })
   }
 
   let body = razorpay_order_id + "|" + razorpay_payment_id
@@ -101,7 +103,6 @@ exports.verifyPayment = async (req, res) => {
     await enrollStudents(courses, userId, res)
     return res.status(200).json({ success: true, message: "Payment Verified" })
   }
-
   return res.status(200).json({ success: false, message: "Payment Failed" })
 }
 
@@ -118,7 +119,9 @@ exports.sendPaymentSuccessEmail = async (req, res) => {
   }
 
   try {
+    logger.info(`Fetching user with ID: ${userId}`);
     const enrolledStudent = await User.findById(userId)
+    logger.info(`Sending payment success email to: ${enrolledStudent.email}`);
 
     await mailSender(
       enrolledStudent.email,
@@ -130,7 +133,10 @@ exports.sendPaymentSuccessEmail = async (req, res) => {
         paymentId
       )
     )
+    logger.info(`Payment success email sent to: ${enrolledStudent.email} for order ID: ${orderId}`);
+
   } catch (error) {
+    logger.error("Error in sending mail", { error });
     console.log("error in sending mail", error)
     return res
       .status(400)

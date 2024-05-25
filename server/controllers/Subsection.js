@@ -2,21 +2,26 @@
 const Section = require("../models/Section")
 const SubSection = require("../models/Subsection")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
+const logger = require('../logger.js');
 
 // Create a new sub-section for a given section
 exports.createSubSection = async (req, res) => {
   try {
     // Extract necessary information from the request body
+    logger.info("Creating new sub-section");
     const { sectionId, title, description } = req.body
     const video = req.files.video
 
     // Check if all necessary fields are provided
     if (!sectionId || !title || !description || !video) {
+      logger.info("Missing required fields");
+
       return res
         .status(404)
         .json({ success: false, message: "All Fields are Required" })
     }
     console.log(video)
+    logger.info("Received video file for sub-section creation", { video });
 
     // Upload the video file to Cloudinary
     const uploadDetails = await uploadImageToCloudinary(
@@ -24,6 +29,8 @@ exports.createSubSection = async (req, res) => {
       process.env.FOLDER_NAME
     )
     console.log(uploadDetails)
+    logger.info("Video uploaded to Cloudinary", { uploadDetails });
+
     // Create a new sub-section with the necessary information
     const SubSectionDetails = await SubSection.create({
       title: title,
@@ -32,12 +39,17 @@ exports.createSubSection = async (req, res) => {
       videoUrl: uploadDetails.secure_url,
     })
 
+    logger.info("New sub-section created", { SubSectionDetails });
+
+
     // Update the corresponding section with the newly created sub-section
     const updatedSection = await Section.findByIdAndUpdate(
       { _id: sectionId },
       { $push: { subSection: SubSectionDetails._id } },
       { new: true }
     ).populate("subSection")
+
+    logger.info("Section updated with new sub-section", { updatedSection });
 
     // Return the updated section in the response
     return res.status(200).json({ success: true, data: updatedSection })
