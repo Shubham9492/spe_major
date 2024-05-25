@@ -11,7 +11,7 @@ services:
       CLOUD_NAME: "dc0hap6ki"
       API_KEY :  "195226433571528"
       API_SECRET :  "qTpc9h1zj5FzkqCOz_Qxt60VVqQ"
-      MONGODB_URL : "mongodb+srv://    sutharshubham84931:cHHZZ3Z2B786QqdP@educonnect11.fi9ap4k.mongodb.net/?retryWrites=true&w=majority&appName=educonnect11"
+      MONGODB_URL : "mongodb+srv://sutharshubham84931:cHHZZ3Z2B786QqdP@educonnect11.fi9ap4k.mongodb.net/?retryWrites=true&w=majority&appName=educonnect11"
       PORT : "4000"
       
     depends_on:
