@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    stages {
+        stage('Stage 1: Clone repository') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/Shubham9492/spe_major.git']]])
+            }
+        }
+        stage('Stage 2: Build Docker Images') {
+            steps {
+                script {
+                    // Building Docker images for backend and frontend
+                    docker_image_backend = docker.build("shubham004/spe-backend", 'server/.')
+                    docker_image_frontend = docker.build("shubham004/spe-frontend", 'client/.')
+                }
+            }
+        }
+        stage('Stage 3: Push Docker Images') {
+            steps {
+                script {
+                    // Login to Docker Hub and push the images
+                    docker.withRegistry('', 'shubhamdocker') {
+                        docker_image_backend.push('latest')
+                        docker_image_frontend.push('latest')
+                    }
+                }
+            }
+        }
+        stage('Stage 4: Clean Docker Images') {
+            steps {
+                script {
+                    sh 'docker container prune -f'
+                    sh 'docker image prune -f'
+                }
+            }
+        }
+        stage('Stage 5: Deploy with Ansible') {
+            steps {
+                script {
+                    // Run the Ansible playbook to deploy Docker Compose stack
+                    sh '''
+                    ansible-playbook -i localhost, deploy.yml
+                    '''
+                }
+            }
+        }
+    }
+}
+
